@@ -1,0 +1,561 @@
+<html>
+<style>
+.c{text-align:center}
+input{border:0}
+td{border:solid 1 black}
+.bb{border-bottom:3 solid black; color:red}
+</style>
+<script>
+var line0
+var line1
+var line2
+var line3
+var line4
+var line5
+var line6
+var line7
+var line8
+var line0_orig
+var line1_orig
+var line2_orig
+var line3_orig
+var line4_orig
+var line5_orig
+var line6_orig
+var line7_orig
+var line8_orig
+var line0_solved
+var line1_solved
+var line2_solved
+var line3_solved
+var line4_solved
+var line5_solved
+var line6_solved
+var line7_solved
+var line8_solved
+function p0(){
+line0 = ['0','0','0','2','7','0','0','9','0']
+line1 = ['0','0','3','0','1','0','0','0','0']
+line2 = ['7','0','0','0','0','9','4','0','1']
+line3 = ['0','0','4','7','0','0','0','0','6']
+line4 = ['0','0','1','0','0','0','2','0','0']
+line5 = ['8','0','0','0','0','4','5','0','0']
+line6 = ['5','0','2','1','0','7','0','0','3']
+line7 = ['0','0','0','0','4','0','7','0','0']
+line8 = ['0','4','0','0','9','8','0','0','0']
+}
+function p1(){
+line0 = ['0','0','0','0','0','0','2','9','0']
+line1 = ['0','0','0','0','0','7','0','0','5']
+line2 = ['0','5','0','9','8','0','0','0','3']
+line3 = ['0','9','0','3','1','2','0','0','8']
+line4 = ['1','0','0','0','0','0','0','0','6']
+line5 = ['3','0','0','8','7','6','0','1','2']
+line6 = ['9','0','0','0','3','1','0','2','0']
+line7 = ['4','0','0','6','0','0','0','0','0']
+line8 = ['0','1','3','0','0','0','0','0','0']
+}
+function p2(){
+line0 = ['0','0','5','0','0','0','6','0','0']
+line1 = ['0','1','7','9','0','8','5','4','0']
+line2 = ['2','6','0','0','0','0','0','7','3']
+
+line3 = ['0','0','0','1','0','5','0','0','0']
+line4 = ['0','4','0','0','0','0','0','5','0']
+line5 = ['0','0','0','4','0','6','0','0','0']
+
+line6 = ['8','7','0','0','0','0','0','3','6']
+line7 = ['0','9','2','6','0','3','7','8','0']
+line8 = ['0','0','3','0','0','0','9','0','0']
+}
+p2()
+
+var line_length = line0.length
+var box_length = Math.sqrt(line0.length)
+var cleanup = new Array()
+var unknown_count = 0
+
+function attemp_solve(){
+var change = true
+//find ones with more than 1
+//while(unknown_count > 0){
+while(change){
+	change = false
+	for(var i=0; i<line_length; i++){ //go down
+		var line = eval("line"+i)
+		for(var j=0; j<line_length; j++){ //go across
+			if(line[j].length > 1){ //more than one
+				for(var c=0; c < line[j].length; c++){
+					if(!checkH(i,j,line[j].charAt(c))){
+						line[j] = line[j].charAt(c)
+						unknown_count--
+						//debug("save from H: "+i,j,line[j])
+						keep_val(i,j,line[j])
+						change = true
+						break
+					}
+					//
+					else if(!checkV(i,j,line[j].charAt(c))){
+						line[j] = line[j].charAt(c)
+						unknown_count--
+						//debug("save from V: "+i,j,line[j])
+						keep_val(i,j,line[j])
+						change = true
+						break
+					}
+//
+					else if(!checkbox(i,j,line[j].charAt(c))){
+						line[j] = line[j].charAt(c)
+						unknown_count--
+						//debug("save from B: "+i,j,line[j])
+						keep_val(i,j,line[j])
+						change = true
+						break
+					}//
+				}
+			}
+		////debug(i,j,line)
+		}
+	}
+}
+}
+
+//WScript.quit()
+function solve(){
+for(var i=0;i <line_length; i++){
+	var lineR = eval("line"+i)
+	//debug(line)
+	for(var j=0; j <line_length; j++){
+		if(lineR[j]=='0'){
+			lineR[j] = getPossibles(i,j)
+			//eval("document.all.box"+i+j+".value = lineR[j]")
+			if(lineR[j].length > 1) unknown_count++
+			else remove_val(i,j,lineR[j])
+		}
+	}
+}
+
+attemp_solve()
+if(unknown_count>0){
+	//save
+	for(var i=0;i<line_length; i++){
+		eval("var tmp" +i+" = new Array('" +eval("line"+i+".join(\"','\")") + "')")
+	}
+
+//find alternative
+	for(var i=0;i<line_length; i++){
+		line = eval("line"+i)
+		for(var j=0;j<line_length; j++){
+			if(line[j].length==2){
+				possibleX = i
+				possibleY = j
+				possible = line[j]
+			}
+		}
+	}
+	
+//attempt to solve
+	unknown_count = unknown_count-1
+	unknown_count_save = unknown_count
+	for(var z=0;z<possible.length; z++){
+		WScript.echo("== Attempt to solve "+z+"==" + possibleX +":"+possibleY +":"+possible)
+		line = eval("line"+possibleX)
+		line[possibleY] = possible.charAt(z)
+		keep_val(possibleX,possibleY,possible.charAt(z))
+		attemp_solve()
+		//print()
+		
+		WScript.echo("==RESET==")
+		if(checkdup()) unknown_count = unknown_count_save
+		if(unknown_count>0){ //reset
+			for(var j=0;j<line_length; j++){
+				eval("var line" +j+" = new Array('" +eval("tmp"+j+".join(\"','\")") + "')")
+			}
+			//reset count
+			unknown_count = unknown_count_save
+		}
+//		print()
+	}
+}
+
+}
+//zero()
+function zero(){
+	for(var i=0;i <line_length; i++){
+		line = eval("line"+i)
+		for(var j=0 ; j <line_length ; j++){
+			if(line[j].length>1)
+				line[j]='0'
+		}
+	}
+	print()
+}
+
+
+function checkH(row, col, val){
+//check horizontal
+	var lineR = eval("line"+row)
+	////debug(line[col])
+	for(var x=0 ; x <line_length ; x++){
+		if(x!=col){ //skip col
+			if(lineR[x].indexOf(val) > -1){ //char found
+					////debug(line[col])
+				return(true)
+			}
+		}
+	}
+	return(false)
+}
+
+function checkV(row, col, val){
+	////debug(row, col, val)
+	for(var y=0; y<line_length; y++){
+		if(y!=row){ //skip row
+			var lineR = eval("line"+y)
+			if(lineR[col].indexOf(val) > -1){ //char found
+				return(true)
+			}
+		}
+	}
+	return(false)
+}
+function checkbox(row, col, val){
+	if(row<box_length) rowstart=0
+	else if(row>=box_length && row<box_length*2) rowstart=box_length
+	else rowstart=box_length * 2
+
+	if(col<box_length) colstart=0
+	else if(col>=box_length && col<box_length*2) colstart=box_length
+	else colstart=box_length * 2
+	
+	////debug(rowstart,colstart,val)
+	for(var i=rowstart; i<rowstart+box_length; i++){
+		lineR = eval("line"+i)
+		for(var j=colstart; j<colstart+box_length; j++){
+			if((i != row) || (j != col)){//skip self
+				////debug(i,j,lineR[j])
+				if(lineR[j].length > 1){ 
+					if(lineR[j].indexOf(val) > -1) return(true) //char found
+				}
+			}
+		}
+	}
+	return(false)
+}
+
+function keep_val(row, col, val){ //removes value from horizontal, vertical, box except self
+	//debug("== keep_val:"+row,col,val)
+	lineR = eval("line"+row)
+	//horizontal
+	for(var i=0;i<line_length;i++){
+		if(i != col){ //skip self
+			//debug(row,i,lineR[i])
+			if(lineR[i].length>1){
+				if(lineR[i].indexOf(val) > -1){ //check if char found
+					couldbe = lineR[i].slice(0,lineR[i].indexOf(val))
+					couldbe += lineR[i].slice(lineR[i].indexOf(val)+1,lineR[i].length)
+					lineR[i] = couldbe
+					//debug("removed val H:"+row,i,val)
+					if(lineR[i].length == 1){						
+						unknown_count--; 
+						//keep_val(row,i,lineR[i])						
+						cleanup.push(eval("["+row+","+i+","+lineR[i]+"]")) 
+						//debug("push H:"+row,i,lineR[i])
+					}
+				}
+			}
+		}
+	}
+//vertical
+	for(var i=0;i<line_length;i++){
+		if(i != row){ //skip self
+			lineR = eval("line"+i)
+			////debug(i,col,lineR[col])
+			if(lineR[col].length>1){
+				if(lineR[col].indexOf(val) > -1){ //check if char found
+					couldbe = lineR[col].slice(0,lineR[col].indexOf(val))					
+					couldbe += lineR[col].slice(lineR[col].indexOf(val)+1,lineR[col].length)
+					lineR[col] = couldbe					
+					//debug("removed val V:"+i,col,val+"-"+couldbe)
+					if(lineR[col].length == 1){						
+						unknown_count--;
+						//keep_val(i,col,lineR[col])
+						cleanup.push(eval("["+i+","+col+","+lineR[col]+"]")) 
+						//debug("push V:"+i,col,lineR[col])
+					}
+				}
+			}
+		}
+	}
+	
+//remove val from box
+	if(row<box_length) rowstart=0
+	else if(row>=box_length && row<box_length*2) rowstart=box_length
+	else rowstart=box_length * 2
+
+	if(col<box_length) colstart=0
+	else if(col>=box_length && col<box_length*2) colstart=box_length
+	else colstart=box_length * 2
+	
+	for(var i=rowstart; i<rowstart+box_length; i++){
+		lineR = eval("line"+i)
+		for(var j=colstart; j<colstart+box_length; j++){
+			if((i!=row) || (j!=col)){//skip row & col
+				////debug(row + ":"+ col + " length:",line[j].length)
+				if(lineR[j].length > 1){
+					if(lineR[j].indexOf(val) > -1){ //check if char found
+						couldbe = lineR[j].slice(0,lineR[j].indexOf(val))
+						couldbe += lineR[j].slice(lineR[j].indexOf(val)+1,lineR[j].length)
+						lineR[j] = couldbe
+						//debug("removed val B:"+i,j,val)
+						if(lineR[j].length == 1){
+							unknown_count--; 
+							//keep_val(i,j,lineR[j])
+							cleanup.push(eval("["+i+","+j+","+lineR[j]+"]"))
+							//debug("push B:"+i,j,lineR[j])
+						}
+					}
+				}
+			}
+		}
+	}//
+
+	if(cleanup.length > 0) remove_val()
+	//if(unknown_count <= 0){ print(); WScript.quit()}
+	//print()
+	return(false)
+	//
+}
+
+function remove_val(){
+	while(cleanup.length > 0){
+		//ary = cleanup[cleanup.length-1]
+		ary = cleanup.shift()
+		row = ary[0]; col = ary[1]; val = ary[2]
+		//debug("start cleanup "+ row,col,val)
+		//debug("cleanup count " + cleanup.length)		
+		//cleanup.pop()
+		keep_val(row,col,val)
+	}	
+}
+
+function getPossibles(row,col){
+	couldbe0 = '123456789';
+
+//check line	
+	line = eval("line"+row)
+	for(var i=0; i<line_length; i++){
+		if((line[i] != '0') && (line[i].length==1)){
+			if(couldbe0.indexOf(line[i]) > -1){ //found
+				couldbe = couldbe0.slice(0,couldbe0.indexOf(line[i]))
+				couldbe += couldbe0.slice(couldbe0.indexOf(line[i])+1,couldbe0.length)
+				couldbe0 = couldbe
+			}
+		}
+	}
+	//return(couldbe0)
+//check cols
+	for(var i=0; i<line_length; i++){
+		line = eval("line"+i)
+		if((line[col] != '0') && (line[col].length==1)){
+			if(couldbe0.indexOf(line[col]) > -1){ //found
+				couldbe = couldbe0.slice(0,couldbe0.indexOf(line[col]))
+				couldbe += couldbe0.slice(couldbe0.indexOf(line[col])+1,couldbe0.length)
+			}
+			couldbe0 = couldbe
+		}
+	}
+
+//check box area
+	if(row<box_length) rowstart=0
+	else if(row>=box_length&&row<box_length*2) rowstart=box_length
+	else rowstart=box_length * 2
+	
+	if(col<box_length) colstart=0
+	else if(col>=box_length&&col<box_length*2) colstart=box_length
+	else colstart=box_length*2
+
+	for(var i=rowstart;i<rowstart+box_length;i++){
+		line = eval("line"+i)
+		for(var j=colstart;j<colstart+box_length;j++){
+			if((line[j] != '0') && (line[j].length==1)){
+				if(couldbe0.indexOf(line[j]) > -1){ //found
+					couldbe = couldbe0.slice(0,couldbe0.indexOf(line[j]))
+					couldbe += couldbe0.slice(couldbe0.indexOf(line[j])+1,couldbe0.length)
+				}
+				couldbe0 = couldbe
+				if(couldbe0.length == 1)return(couldbe0)
+			}
+		}
+	}
+	return(couldbe0)
+}
+
+function checkdup(){
+//check H
+	for(var i=0;i<line_length;i++){
+		line = eval("line"+i)
+		for(var j=0;j<line_length;j++){
+			for(var k=j;k<line_length;k++){
+				//skip self
+				if(j != k){
+					if(line[j] == line[k]) return(false)
+				}
+			}
+		}
+	}
+//check V
+	for(var i=0;i<line_length;i++){		
+		for(var j=0;j<line_length;j++){
+			lineA = eval("line"+j)
+			for(var k=j;k<line_length;k++){
+				lineB = eval("line"+k)
+				//skip self
+				if(j != k){
+					if(lineA[i] == lineB[i]) return(false)
+				}
+			}
+		}
+	}
+}
+
+function print(){
+	for(var i=0;i<line_length;i++){
+		document.all.debugbox.innerHTML=(eval("line"+i)); 
+	}
+	document.all.debugbox.innerHTML=("Unknown count: " + unknown_count);
+}
+
+function debug(a,b,val){
+	if(b==undefined) b=''
+	if(val==undefined) val=''
+	document.all.debugbox.innerHTML += a + ":" + b + ":" + val + "<br>"
+}
+function debugparam(val){
+	document.all.debugbox.innerHTML += eval(val) + "<br>"
+}
+
+function save_original(){
+	for(var i=0; i<line_length; i++){
+		eval("line" +i+"_orig = new Array('" +eval("line"+i+".join(\"','\")") + "')")
+	}
+}
+function save_answer(){
+	for(var i=0;i <line_length; i++){
+		eval("line" +i+"_solved = new Array('" +eval("line"+i+".join(\"','\")") + "')")
+		eval("line" +i+" = new Array('" +eval("line"+i+"_orig.join(\"','\")") + "')")
+	}
+}
+function restart(){
+	for(var i=0; i<line_length; i++){
+		lineR = eval("line"+i+"_orig")
+		for(var j=0; j<line_length; j++){
+			 val = (lineR[j]=='0')?'':lineR[j]
+			 eval("document.all.box"+i+j+".value = val")
+		}
+	}
+}
+function showAnswers(){
+	for(var i=0; i<line_length; i++){
+		lineR = eval("line"+i+"_solved")
+		for(var j=0; j<line_length; j++){
+			 val = (lineR[j]=='0')?'':lineR[j]
+			 eval("document.all.box"+i+j+".value = val")
+		}
+	}
+}
+
+function showHint(){
+	for(var i=0; i<line_length; i++){
+		lineR = eval("line"+i+"_solved")
+		for(var j=0; j<line_length; j++){
+			if(eval("document.all.box"+i+j+".value").length ==0) { 
+				eval("document.all.box"+i+j+".value = " + lineR[j])
+				eval("document.all.box"+i+j+".style.fontWeight = 'bold'")
+				eval("document.all.box"+i+j+".style.color = 'blue'")
+				//eval("document.all.box"+i+j+".style.fontSize = '16'")
+				//alert(i+":"+j+":"+lineR[j]); 
+				return(true)
+			}
+		}
+	}
+}
+function checkAnswers(){
+	for(var i=0; i<line_length; i++){
+		lineR = eval("line"+i+"_solved")
+		for(var j=0; j<line_length; j++){
+			if(eval("document.all.box"+i+j+".value") != lineR[j] ){
+				eval("document.all.box"+i+j+".style.color = 'red'")
+				var wrong = true
+			}
+		}
+	}
+	if(wrong) return(false)
+	else alert("So far so good!")
+}
+
+function set(){
+	for(var i=0; i<line_length; i++){
+		lineR = eval("line"+i)
+		for(var j=0; j<line_length; j++){
+			if(eval("document.all.box"+i+j+".value") == ''){
+				lineR[j] = '0'
+			}else{
+				//document.all.debugbox.innerHTML = lineR[j]
+				lineR[j] = eval("document.all.box"+i+j+".value")
+			}
+		}
+	}
+	save_original()
+	solve()
+	save_answer()
+}
+
+function numonly(){
+	//alert(event.keyCode)
+	if(event.keyCode <= 13) return(event.keyCode)
+	if(event.keyCode!=13 && (event.keyCode < 48 || event.keyCode > 57)) return(false)
+}
+
+function init(){
+	for(var i=0; i<line_length; i++){
+		for(var j=0; j<line_length; j++){
+			eval("document.all.box"+i+j+".onkeypress=numonly")
+		}
+	}
+}
+window.onload=init;
+</script>
+<body>
+<table cellpadding=0 cellspacing=0>
+<script>
+//draw table & load data
+for(var i=0; i<line_length; i++){
+	document.writeln("<tr>")		
+	var line = eval("line"+i)
+	if((i+1)%3){
+		for(var j=0; j<line_length; j++){
+			if((j+1)%3) document.writeln("<td><input size=1 maxlength=1 class=c name=box"+i+j+" value="+ ((line[j]=='0')?'':line[j]) +"></td>")
+			else document.writeln("<td style='border-right:3 solid black'><input size=1 maxlength=1 class=c name=box"+i+j+" value="+ ((line[j]=='0')?'':line[j]) +"></td>")			
+		}
+	}else{
+		for(var j=0; j<line_length; j++){
+			if((j+1)%3) document.writeln("<td style='border-bottom:3 solid black'><input size=1 maxlength=1  class=c name=box"+i+j+" value="+ ((line[j]=='0')?'':line[j]) +"></td>")
+			else document.writeln("<td style='border-bottom:3 solid black;border-right:3 solid black'><input size=1 maxlength=1 class=c name=box"+i+j+" value="+ ((line[j]=='0')?'':line[j]) +"></td>")			
+		}
+	}
+	document.writeln("</tr>")
+}
+save_original()
+solve()
+save_answer()
+</script>
+</table>
+<button onclick="showHint()">Show Hint</button><button onclick="showAnswers()">Show Answers</button>
+<br>
+<button onclick="checkAnswers()">How am I doing so far?</button>
+<button onclick="restart()">Restart</button>
+<button onclick="set()">Solve my entry</button>
+<!--input name=param><button onclick="debugparam(document.all.param.value)">debug</button-->
+<div id=debugbox style="width:500;height:200"></div>
+</body></html>
